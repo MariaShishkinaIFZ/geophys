@@ -1,0 +1,9 @@
+# vim
+*.swp
+
+# python cache
+__pycache__
+
+# global data dir
+/data
+
