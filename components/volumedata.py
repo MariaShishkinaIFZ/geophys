@@ -214,8 +214,15 @@ class VolumeData:
     #   tuple(a,b) if the grid is uniform and OK
     #   raises ValueError if grid is bad (non-linear/non-uniform)
     def grid2idx_transform(self, grid_1d):
-        if len(np.shape(grid_1d)) != 1:
-            raise ValueError("check is dedicated only to 1d check")
+        if len(grid_1d.shape) != 1:
+            raise ValueError("only 1d grid is supported for now, "
+                             "provided shape: %s" % (grid_1d.shape))
+        if grid_1d.shape[0] == 0:
+            raise ValueError("no points in grid!")
+        if grid_1d.shape[0] == 1:
+            # linear regression complains if only one point
+            # is given, so running it customly here
+            return(1.0, float(grid_1d[0]))
 
         N = grid_1d.shape[0]
         res = stats.linregress(grid_1d, np.linspace(0, N - 1, N))
@@ -223,14 +230,19 @@ class VolumeData:
 
         EPSILON = 0.0001
         if abs(1.0 - r_val**2) > EPSILON:
-            raise ValueError("Grid values are not uniform R^2 == %f: "
+            raise ValueError("Grid values are not uniform R^2 == %f, grid: "
                              "%s\n" % (r_val**2, str(grid_1d)))
         return (a,b)
 
-    # RETURNS: the grid index for given spatial coordinate @x, for
+    # @axis one of 'x','y','z' defines the axis to work with
+    # RETURNS: the grid index for given spatial coordinate @spatial_coord, for
     #   given @axis
-    def grid2idx(self, axis, x):
-        int(round(grid2idx_dict[axis][0] * x + grid2idx_dict[axis][1]))
+    def grid2idx(self, axis, spatial_coord):
+        if self.grid2idx_dict[axis] is None:
+            raise ValueError("the grid %c transform was not yet computed")
+        a = self.grid2idx_dict[axis][0]
+        b = self.grid2idx_dict[axis][1]
+        return int(round(a * spatial_coord + b))
 
     # Reads the given ASCII file, which contents are interpreted as
     # according to the parameters into internal float ZYX numpy array.
@@ -260,7 +272,7 @@ class VolumeData:
 
         # raw 2D array (y runs over file lines, x runs over columns)
         raw_data = np.loadtxt(file_p, dtype='float32')
-        
+
         if (len(raw_data.shape) <= 0):
             raise ValueError("Nothing was loaded from file: %s "
                              "(resulting data shape: %s)"
@@ -288,10 +300,10 @@ class VolumeData:
                                  "exactly one flag '%c' now has: %d"
                                  % (c, len(data_column_idx)))
             zyxd_column_indexes.append(idx[0])
-        
+
         # only relevant columns
         needed_data = raw_data[:, tuple(zyxd_column_indexes)]
-        
+
         # TODO: a continuity check of the given data
         print("WARNING: continuity and uniformity checks are NOT performed "
               "on the input data!")
@@ -302,26 +314,29 @@ class VolumeData:
         #   single axis).
 
         # Example of unique grid vals:  [-1.3, 0.7, 2.7, 4.7]
-        unique = {'z': np.unique(needed_data[:, 0]) 
-                  , 'y': np.unique(needed_data[:, 1]) 
+        unique = {'z': np.unique(needed_data[:, 0])
+                  , 'y': np.unique(needed_data[:, 1])
                   , 'x': np.unique(needed_data[:, 2])}
 
         print("Extracted data coordinate planes count (Z;Y;X): (%d;%d;%d)"
-              % tuple([unique[c].shape[0] for c in 'xyz']))
+              % tuple([unique[c].shape[0] for c in 'zyx']))
 
         # now we need to compute the appropriate tranformation
         # from the spatial grid coordinates to array indexes
         for c in 'xyz':
             try:
                 self.grid2idx_dict[c] = self.grid2idx_transform(unique[c])
+                print("Grid %c space to idx: %c_idx = %f * %c + %f"
+                      % (c, c, self.grid2idx_dict[c][0], c
+                         , self.grid2idx_dict[c][1]))
             except Exception as e:
                 raise ValueError("(the grid: %s); please fix it before "
                                  "continuing. Abort." % (c)) from e
 
         data_shape = np.array([ unique[c].shape[0] for c in 'zyx' ], dtype=int)
 
-        print("Data volume index shape: %s" % (str(data_shape)))
-        print("Data points count: %d" % (points_count))
+        print("Data volume index shape (ZYX): %s" % (str(data_shape)))
+        print("Data points total count: %d" % (points_count))
 
         self.data = np.zeros(data_shape)
 
@@ -331,7 +346,10 @@ class VolumeData:
             y = rec[1]
             x = rec[2]
             val = rec[3]
-            data[grid2idx('z', z)][grid2idx('y', y)][grid2idx('x', x)] = val
+            z_idx = self.grid2idx('z', z)
+            y_idx = self.grid2idx('y', y)
+            x_idx = self.grid2idx('x', x)
+            self.data[z_idx][y_idx][x_idx] = val
         self.original_file_path = file_p
 
         shape = np.shape(self.data)
@@ -399,7 +417,7 @@ class VolumeData:
               % (str(self.data.shape), str(file_p), str(col_order)))
 
 #########################
-# TESTS 
+# TESTS
 #########################
 
 # Tests the functionality of the VolumeData class IF
@@ -711,7 +729,7 @@ class VolumeDataTester(unittest.TestCase):
 
         extra_columns_count = rn.randint(min_extra_columns
                                          , max_extra_columns)
-        
+
         orig_col_order = "xyzd" + extra_columns_count * "-"
         col_order = ''.join(random.sample(orig_col_order, len(orig_col_order)))
         print("ASCII extra colums count: %d" % (extra_columns_count))
@@ -764,7 +782,7 @@ class VolumeDataTester(unittest.TestCase):
         with tf.SpooledTemporaryFile(max_size=10000
                                      , mode='r+') as in_file:
 
-            expexted_data, col_oder = self.helper_gen_data_ascii(
+            expected_data, col_oder = self.helper_gen_data_ascii(
                                             max_shape_zyx
                                             , min_shape_zyx
                                             , min_extra_columns
@@ -775,9 +793,9 @@ class VolumeDataTester(unittest.TestCase):
                              , "file_type": "ascii"
                              , "input_columns": col_oder })
 
-            self.assertTrue(np.allclose(vd.data, expexted_data)
+            self.assertTrue(np.allclose(vd.data, expected_data)
                             , msg=("\nLoaded data:\n%s\nExpected data:\n%s\n"
-                                   %(vd.data, expexted_data)))
+                                   %(vd.data, expected_data)))
 
     # helper to test if the intentionally generated ASCII file
     # is loaded properly into the parsing class, then saved into
@@ -787,7 +805,7 @@ class VolumeDataTester(unittest.TestCase):
         with tf.SpooledTemporaryFile(max_size=10000
                                      , mode='r+') as in_file:
 
-            expexted_data, col_oder = self.helper_gen_data_ascii(
+            expected_data, col_oder = self.helper_gen_data_ascii(
                                             max_shape_zyx
                                             , min_shape_zyx
                                             , 0, 0, in_file)
@@ -797,10 +815,10 @@ class VolumeDataTester(unittest.TestCase):
                              , "input_columns": col_oder })
 
             # ASCII was correctly loaded
-            self.assertTrue(np.allclose(vd.data, expexted_data)
+            self.assertTrue(np.allclose(vd.data, expected_data)
                             , msg=("\nLoaded data:\n%s\nExpected data:\n%s\n"
-                                   %(vd.data, expexted_data)))
-            
+                                   %(vd.data, expected_data)))
+
             with tf.SpooledTemporaryFile(max_size=1000
                                          , mode='r+b') as out_file:
                 change_order = "xyz"
@@ -814,12 +832,12 @@ class VolumeDataTester(unittest.TestCase):
                 vd2 = VolumeData({"file": out_file
                                   , "file_type": "binary"
                                   , "idx_change_order": change_order
-                                  , "volume_shape_zyx": expexted_data.shape})
+                                  , "volume_shape_zyx": expected_data.shape})
 
-                self.assertTrue(np.allclose(vd2.data, expexted_data)
+                self.assertTrue(np.allclose(vd2.data, expected_data)
                                 , msg=("\nLoaded from binary data:\n"
                                        "%s\nExpected data:\n%s\n"
-                                       %(vd2.data, expexted_data)))
+                                       %(vd2.data, expected_data)))
 
 
     # Quite exhaustive test for ascii parsing
@@ -827,7 +845,7 @@ class VolumeDataTester(unittest.TestCase):
         for i in range(100):
             self.helper_check_ascii_read_correct(
                        (10,10,10), (1,1,1), 0, 3)
- 
+
     # Quite exhaustive test for ascii parsing
     def test_ascii_binary_rw_random_data_100iterations(self):
         for i in range(100):
@@ -836,36 +854,36 @@ class VolumeDataTester(unittest.TestCase):
 
     # tests direct data creation
     def test_direct_creation(self):
-        expexted_data = np.array([[[42.3, 52.4], [62.3, 72.8]]])
+        expected_data = np.array([[[42.3, 52.4], [62.3, 72.8]]])
 
         vd = VolumeData()
-        vd.data = expexted_data
-        self.assertTrue(np.allclose(vd.data, expexted_data)
+        vd.data = expected_data
+        self.assertTrue(np.allclose(vd.data, expected_data)
                         , msg=("\nVolumeData assigned:\n"
                                "%s\ndiffers from expected data:\n%s\n"
-                               %(vd.data, expexted_data)))
+                               %(vd.data, expected_data)))
 
         vd = VolumeData(np.array([[[42.3, 52.4], [62.3, 72.8]]]))
-        self.assertTrue(np.allclose(vd.data, expexted_data)
+        self.assertTrue(np.allclose(vd.data, expected_data)
                         , msg=("\nDirect constructor data (from ndarray):\n"
                                "%s\ndiffers from expected data:\n%s\n"
-                               %(vd.data, expexted_data)))
+                               %(vd.data, expected_data)))
 
         vd = VolumeData([[[42.3, 52.4], [62.3, 72.8]]])
-        self.assertTrue(np.allclose(vd.data, expexted_data)
+        self.assertTrue(np.allclose(vd.data, expected_data)
                         , msg=("\nDirect constructor data (from list):\n"
                                "%s\ndiffers from expected data:\n%s\n"
-                               %(vd.data, expexted_data)))
+                               %(vd.data, expected_data)))
 
     # tests how we write ascii file:
     #     VolumeData -> automatic ascii ->  VolumeData
     def test_ascii_write(self):
         with tf.SpooledTemporaryFile(max_size=1000
                                      , mode='r+') as in_file:
-            expexted_data = np.array([[[42.3, 52.4], [62.3, 72.8]]])
+            expected_data = np.array([[[42.3, 52.4], [62.3, 72.8]]])
 
             vd = VolumeData()
-            vd.data = expexted_data
+            vd.data = expected_data
 
             with tf.SpooledTemporaryFile(max_size=1000
                                          , mode='r+') as saved_file:
@@ -879,10 +897,10 @@ class VolumeDataTester(unittest.TestCase):
                                   , "file_type": "ascii"
                                   , "input_columns": col_order })
 
-                self.assertTrue(np.allclose(vd2.data, expexted_data)
+                self.assertTrue(np.allclose(vd2.data, expected_data)
                                     , msg=("\nLoaded from ascii data:\n"
                                            "%s\nExpected data:\n%s\n"
-                                           %(vd.data, expexted_data)))
+                                           %(vd.data, expected_data)))
 
     def test_construction_sparse_ascii_to_from_binary(self):
         in_ascii_file_path = os.path.join(test_data_dir_a
@@ -891,6 +909,17 @@ class VolumeDataTester(unittest.TestCase):
                          , "file_type": "ascii"
                          , "input_columns": "xyzd"})
         self.assertTrue(vd is not None)
+
+        # see test data file (this is part of the data to compare)
+        expected_data = np.array([2551.81, 2552.82, 2553.83, 2554.84
+                                  , 2555.85 , 2556.86 , 2557.87 , 2558.88
+                                  , 2559.89 , 2550.90 , 2551.91])
+
+        real_data = vd.data[0,0:11,0].flatten()
+        self.assertTrue(np.allclose(real_data, expected_data)
+                        , msg=("\nLoaded from ascii data (ZYX) [0,0:11,0]:\n"
+                               "%s\nExpected data:\n%s\n"
+                               %(real_data, expected_data)))
 
 
 if __name__ == "__main__":
