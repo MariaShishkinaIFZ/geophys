@@ -37,8 +37,17 @@ class VolumeData:
     data = None
     # dict axis symbol -> tuple (a,b), where the a,b are the
     # linear coefficient regression from grid to index
-    # NOTE: see also @data
+    # NOTE: SEE ALSO @data
     grid2idx_dict = {'x': None, 'y': None, 'z': None}
+
+    # SEE ALSO: @grid2idx_dict
+    @property
+    def grid2index_dict(self):
+        return self.grid2idx_dict.copy()
+
+    # Drops the index->spatial transformation to identity
+    def reset_spatial_transformation(self):
+        grid2idx_dict = {'x': None, 'y': None, 'z': None}
 
     # RETURNS:
     #   True if the object is file-like for us
@@ -222,7 +231,7 @@ class VolumeData:
         if grid_1d.shape[0] == 1:
             # linear regression complains if only one point
             # is given, so running it customly here
-            return(1.0, float(grid_1d[0]))
+            return(1.0, -float(grid_1d[0]))
 
         N = grid_1d.shape[0]
         res = stats.linregress(grid_1d, np.linspace(0, N - 1, N))
@@ -235,6 +244,7 @@ class VolumeData:
         return (a,b)
 
     # @axis one of 'x','y','z' defines the axis to work with
+    # @spatial_coord the axis value to convert to array axis index
     # RETURNS: the grid index for given spatial coordinate @spatial_coord, for
     #   given @axis
     def grid2idx(self, axis, spatial_coord):
@@ -243,6 +253,18 @@ class VolumeData:
         a = self.grid2idx_dict[axis][0]
         b = self.grid2idx_dict[axis][1]
         return int(round(a * spatial_coord + b))
+
+    # @axis one of 'x','y','z' defines the axis to work with
+    # @index the axis array index to convert to spatial axis value
+    # RETURNS: the spatial coordinate for given @axis and @index on @axis
+    #   NOTE: if spatial information is not yet there, then
+    #       index is returned
+    def idx2grid(self, axis, index):
+        if self.grid2idx_dict[axis] is None:
+            return index
+        a = self.grid2idx_dict[axis][0]
+        b = self.grid2idx_dict[axis][1]
+        return (float(index) - b) / a
 
     # Reads the given ASCII file, which contents are interpreted as
     # according to the parameters into internal float ZYX numpy array.
@@ -398,14 +420,14 @@ class VolumeData:
             raw = np.empty((1, col_count), dtype=float)
             for col_idx in range(col_count):
                 col_type = col_order[col_idx]
-                if col_type == 'x': raw[0][col_idx] = i
-                elif col_type == 'y': raw[0][col_idx] = j
-                elif col_type == 'z': raw[0][col_idx] = k
+                if col_type == 'x': raw[0][col_idx] = self.idx2grid('x', i)
+                elif col_type == 'y': raw[0][col_idx] = self.idx2grid('y', j)
+                elif col_type == 'z': raw[0][col_idx] = self.idx2grid('z', k)
                 elif col_type == 'd':
                     raw[0][col_idx] = self.data[k][j][i]
                 else:
-                    raw[0][col_idx] = rn.randint(MIN_MOCK_DATA
-                                                 , MAX_MOCK_DATA)
+                    raise ValueError("bad output column order: %s"
+                                     % (str(col_order)))
             points[raw_idx, :] = raw
 
         for idx in range(points_count):
@@ -468,6 +490,28 @@ class VolumeDataTester(unittest.TestCase):
             in_file.write("0 0 0 100\n")
             in_file.write("0 0 1 200\n")
             in_file.write("0 0 2 300\n")
+            in_file.seek(0)
+            print(in_file.read())
+            in_file.seek(0)
+            vd = VolumeData({"file": in_file
+                             , "file_type": "ascii"
+                             ,"input_columns": "zyxd" })
+            # data geometry: ZYX (3 1 1)
+            self.assertEqual(len(np.shape(vd.data)), 3)
+            self.assertEqual(np.shape(vd.data)[0], 1)
+            self.assertEqual(np.shape(vd.data)[1], 1)
+            self.assertEqual(np.shape(vd.data)[2], 3)
+
+            # data value
+            self.assertEqual(vd.data[0][0][0], 100.)
+            self.assertEqual(vd.data[0][0][1], 200.)
+            self.assertEqual(vd.data[0][0][2], 300.)
+
+    def test_construction_ascii_3points_spatially_transformed_zyxd(self):
+        with tf.SpooledTemporaryFile(max_size=1000, mode='r+') as in_file:
+            in_file.write("0 0 -5 100\n")
+            in_file.write("0 0 -2 200\n")
+            in_file.write("0 0 1  300\n")
             in_file.seek(0)
             print(in_file.read())
             in_file.seek(0)
@@ -695,10 +739,10 @@ class VolumeDataTester(unittest.TestCase):
                 self.assertEqual(np.shape(vd2.data)[2], 2)
 
                 # data value
-                self.assertEqual(vd2.data[0][0][0], 42.)
-                self.assertEqual(vd2.data[0][0][1], 52.)
-                self.assertEqual(vd2.data[0][1][0], 62.)
-                self.assertEqual(vd2.data[0][1][1], 72.)
+                expected_data = np.array([[[42., 52.],[62.,72.]]])
+                self.assertTrue(np.allclose(vd.data, expected_data)
+                            , msg=("\nLoaded data:\n%s\nExpected data:\n%s\n"
+                                   %(vd.data, expected_data)))
 
 
     # generates the random shaped data, and random ascii
@@ -921,6 +965,80 @@ class VolumeDataTester(unittest.TestCase):
                                "%s\nExpected data:\n%s\n"
                                %(real_data, expected_data)))
 
+    def test_ascii_with_spatial_data_export(self):
+        with tf.SpooledTemporaryFile(max_size=1000
+                                     , mode='r+') as in_file:
+            #              Y      Z    X   D
+            in_file.write("-4   42.3   0   1\n")
+            in_file.write("-4   42.3   2   2\n")
+            in_file.write("-4   42.3   4   3\n")
+            in_file.write("-2.5 42.3   0   4\n")
+            in_file.write("-2.5 42.3   2   5\n")
+            in_file.write("-2.5 42.3   4   6\n")
+            in_file.seek(0)
+            print(in_file.read())
+            in_file.seek(0)
+            vd = VolumeData({"file": in_file
+                             , "file_type": "ascii"
+                             , "input_columns": "yzxd" })
+
+            expected_grid2idx = {'y': np.array([1./1.5, 8./3.])
+                                 , 'z': np.array([1.0, -42.3])
+                                 , 'x': np.array([0.5, 0.])}
+            for c in 'xyz':
+                self.assertTrue(np.allclose(np.array(vd.grid2index_dict[c])
+                                            , expected_grid2idx[c])
+                                , msg=("\nLoaded from ascii data geometry "
+                                       "transformation for axis '%c' "
+                                       "(grid -> index):                 \n"
+                                       "       %f * %c + %f              \n"
+                                       "differs from expected:           \n"
+                                       "       %f * %c + %f              \n"
+                                       %(c, vd.grid2index_dict[c][0], c
+                                         , vd.grid2index_dict[c][1]
+                                         , expected_grid2idx[c][0], c
+                                         , expected_grid2idx[c][1])))
+
+    def test_ascii_with_spatial_data_export(self):
+        with tf.SpooledTemporaryFile(max_size=1000
+                                     , mode='r+') as in_file:
+            #          Y      Z      X    D
+            original_ascii_data = np.array([
+                      [-4,   42.3,   0,   1]
+                    , [-4,   42.3,   2,   2]
+                    , [-4,   42.3,   4,   3]
+                    , [-2.5, 42.3,   0,   4]
+                    , [-2.5, 42.3,   2,   5]
+                    , [-2.5, 42.3,   4,   6]
+                    ])
+            for line in range(original_ascii_data.shape[0]):
+                original_ascii_data[line].tofile(in_file, sep=" ")
+                in_file.write("\n")
+            in_file.seek(0)
+            print(in_file.read())
+            in_file.seek(0)
+            vd = VolumeData({"file": in_file
+                             , "file_type": "ascii"
+                             , "input_columns": "yzxd" })
+
+            with tf.SpooledTemporaryFile(max_size=1000
+                                         , mode='r+') as out_file:
+                vd.write({"file": out_file
+                          , "file_type": 'ascii'
+                          , "output_columns": "yzxd"})
+                out_file.seek(0)
+                print("saved ascii data:")
+                print(out_file.read())
+                out_file.seek(0)
+                raw_ascii_data = np.fromfile(out_file, sep=" ").reshape(
+                                              original_ascii_data.shape)
+                orig = np.sort(original_ascii_data, axis=0)
+                real = np.sort(raw_ascii_data, axis=0)
+
+                self.assertTrue(np.allclose(orig, real)
+                                , msg=("\nOriginal ascii data:\n%s\n"
+                                       "differs from written to ascii file:\n%s\n"
+                                       %(str(orig), str(real))))
 
 if __name__ == "__main__":
     unittest.main()
