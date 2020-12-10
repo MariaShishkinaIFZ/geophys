@@ -62,9 +62,26 @@ def convert(config_in, config_out):
 
 # Parses the arguments
 def parse_args():
-    parser = argparse.ArgumentParser(description='Converts from/to given ASCII '
-                                    'format to/from raw float format to fit '
-                                    'computational framework.')
+    parser = argparse.ArgumentParser(
+            formatter_class=argparse.RawTextHelpFormatter
+            , description='Converts from/to given ASCII format to/from raw\n'
+            'float format to fit computational framework.                 \n'
+            , epilog='Usage examples:                                     \n'
+            '      # to convert from ./in.txt ascii format with           \n'
+            '      # column order "zyxd" to the binary file ./bin.dat     \n'
+            '      # with index change oder: "zyx" use following:         \n'
+            '      python3 ../3d-codec.py --in ./in.txt --out ./bin.dat \\\n'
+            '          --itype ascii --iformat zyxd --otype binary      \\\n'
+            '          --oformat "zyx"                                    \n'
+            '                                                             \n'
+            '      # to convert from ./bin.dat binary format with         \n'
+            '      # index change order "zyx" and ZYX sizes (2;2;3)       \n'
+            '      # to the asci file ./out.txt with column oder: "zyx"   \n'
+            '      # use following:                                       \n'
+            '      python3 ../3d-codec.py --in ./bin.dat --out ./out.txt\\\n'
+            '          --itype binary --iformat "z(2)y(2)x(3)" --otype  \\\n'
+            '          ascii --oformat zyxd                               \n'
+            )
     parser.add_argument('--in', dest='input', type=str
                         , required=True, action='store'
                         , help='a path to an input file to convert')
