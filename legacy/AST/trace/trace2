@@ -1,0 +1,18 @@
+#!/bin/tcsh
+
+tracerays2 <<$END
+rec.coo
+0
+0.pix
+0 0.0001
+time_i0.3d
+0.5 5.0 0.0
+cov.3d
+du.3d
+0
+bas_i0.2d
+rays_2.dat
+cross_2.dat
+velsed.3d
+velcr.3d
+$END
