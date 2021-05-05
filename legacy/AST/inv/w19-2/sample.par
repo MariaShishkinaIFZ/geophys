@@ -1,0 +1,26 @@
+rw_ref_traces.dat	/*1st LINE: Reflected rays traces*/
+rw_ref_points.dat	/*2nd LINE: Reflection points and derivatives file*/
+dw_ref_traces.dat	/*3rd LINE: Rays path's file*/
+hw_ref_crosspoints.dat	/*4th LINE: Basement crosspoints and derivatives file*/
+ds_it1.2d		/*5th LINE: Output slowness variations file*/
+dz_it1.2d		/*6th LINE: Output interface position file*/
+10 1			/*7th LINE: Rougness regularization parameters for horizontal and vertical dir.*/
+1			/*8th LINE: Global regularization parameter*/
+wells.dat 100.0		/*9th LINE: Wells (reflection) data file and general weighting factor*/
+3 11			/*10th LINE: Minimum numbers 1 and 2 of normalized hit counts (NORMALISED according to next line)*/
+1			/*11th LINE: Ps: Number of rays per wavelet support is nomalised by 2^(Ps*l), l - wavelet order*/
+10			/*12th LINE: Minimum number of refraction+reflection points (NORMALISED according to next line)*/
+0			/*13th LINE: Pi: Number of points per wavelet support is nomalised by 2^(Pi*l), l - wavelet order*/
+1 1			/*14th LINE: Flags to use (1) or not (0) downgoing and upgoing headwave rays*/
+1 1			/*15th LINE: Flags to use (1) or not (0) downgoing and upgoing reflected rays*/
+velmod_reference.3d	/*16th LINE: Fine true reference velocity model*/
+interface_reference.2d	/*17th LINE: Fine reference interface position*/
+top_layer_boundary.2d	/*18th LINE: Fine layer top position*/
+0			/*19th LINE: Smooth model flag (1 -target, 0 - variance)*/
+0.0 0.9			/*20th LINE: Minimum angular deviation values 1 and 2 (radian)*/
+0.0 0.9			/*21st LINE: Minimum angular deviation values 1 and 2 (radian) for UPL*/
+0.0 2.0			/*22nd LINE: Radius and exponent power for the smoothing of the interface*/
+0.0 0.0			/*23rd LINE: Radius and power for additional smoothing of sub-interface slowness variation*/
+0			/*24th LINE: Include (1) or not (0) the scaling function, i.e. constant in all expansions*/
+0			/*25th LINE: Estimate (1) or not (0) the resolution matrix: time consuming!*/
+ 
