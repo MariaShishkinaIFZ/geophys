@@ -1,0 +1,463 @@
+This is TeXk, Version 3.14159 (Web2C 7.4.4) (format=latex 2003.10.21)  20 OCT 2006 12:03
+ file:line:error style messages enabled.
+**paper1-1.tex
+(/usr/share/texmf/tex/latex/tools/.tex
+/usr/share/texmf/tex/latex/tools/.tex:1: Interruption
+You rang?
+Try to insert some instructions for me (e.g.,`I\showlists'),
+unless you just want to quit by typing `X'.
+
+LaTeX2e <2001/06/01>
+Babel <v3.7h> and hyphenation patterns for american, french, german, ngerman, r
+ussian, ukrainian, nohyphenation, loaded.
+File ignored)
+*q
+
+^^@:0: LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+Missing character: There is no q in font nullfont!
+
+*x
+Missing character: There is no x in font nullfont!
+
+*
+! Interruption
+You rang?
+Try to insert some instructions for me (e.g.,`I\showlists'),
+unless you just want to quit by typing `X'.
+
+
+Overfull \hbox (20.0pt too wide) detected at line 0
+[]
+ []
+
+(Please type a command or say `\end')
+*\end
+
+*x
+
+^^@:0: LaTeX Error: \begin{document} ended by \end{x}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+^^@:0: Extra \endgroup
+Things are pretty mixed up, but I think the worst is over.
+
+
+*
+(Please type a command or say `\end')
+*\end
+
+*\quit
+^^@:0: Undefined control sequence
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+The control sequence marked <to be read again> should
+not appear between \csname and \endcsname.
+
+^^@:0: Missing \endcsname inserted
+(That makes 100 errors; please try again.) 
+Here is how much of TeX's memory you used:
+ 7 strings out of 95799
+ 127 string characters out of 1192021
+ 46863 words of memory out of 1000001
+ 3042 multiletter control sequences out of 10000+50000
+ 3640 words of font info for 14 fonts, out of 500000 for 1000
+ 24 hyphenation exceptions out of 1000
+ 99i,0n,99p,92b,14s stack positions out of 1500i,1000n,5000p,200000b,5000s
+
+No pages of output.

@@ -1,0 +1,78 @@
+#!/bin/bash
+
+source mktf.conf
+
+
+mkdir -p $well_01
+mkdir -p $well_02
+
+
+function PrintMessage ()
+{
+  echo -e "\033[1mISDG: $1\033[0m"
+}
+
+
+function ErrorQuit ()
+{
+  echo -e "\E[31;40mISDG: FATAL ERROR: $1 EXIT CODE: $2"; tput sgr0
+  exit $2
+}
+
+
+
+  function CalculateTF () {
+    PrintMessage "Punching $1 in well $2: ..."
+
+    PUNCH_PAR=punch.par
+
+    XS=$3
+    YS=0
+    ZS=$1     
+
+     ZNAME=`echo 1 | gawk -vLA=$1 '{printf("%04.0f \n", LA)}'`
+     echo "name = $ZNAME"
+
+    TIME_FILE=$2/$ZNAME
+
+    echo	floatsrc=1 		>  $PUNCH_PAR
+    echo	fxs=$XS			>> $PUNCH_PAR
+    echo	fys=$YS			>> $PUNCH_PAR
+    echo	fzs=$ZS  		>> $PUNCH_PAR
+    echo	timefile=$TIME_FILE	>> $PUNCH_PAR
+    echo	velfile=$PW_VM		>> $PUNCH_PAR
+    echo	reverse=40      	>> $PUNCH_PAR
+    echo	maxoff=300.      	>> $PUNCH_PAR
+    echo	'  ' 	  		>> $PUNCH_PAR
+
+    punch par=$PUNCH_PAR
+    E_PUNCH=$?
+    if [ $E_PUNCH -ne 0 ] ; then 
+      ErrorQuit "Punch execution failed." $E_PUNCH
+    fi 
+
+    PrintMessage "TFO id: $1 in well $2  is punched."
+  }
+
+
+
+# Processing
+
+
+
+  slice22d $MODEL_NAME.gmt $PW_VM 3
+
+  for Z_value in $Z_RANGE;	do
+    CalculateTF $Z_value $well_01 $well_01_XX
+  done
+
+  for Z_value in $Z_RANGE;	do
+    CalculateTF $Z_value $well_02 $well_02_XX
+  done
+
+echo parambaram
+    echo 1 | gawk -vLA=$well_01 '{printf("%04.0f \n", LA)}'
+  echo lalalalla
+
+
+

@@ -1,0 +1,45 @@
+#!/bin/csh
+ gmtset GRID_CROSS_SIZE 0 ANOT_FONT_SIZE 10 PAPER_MEDIA a4
+
+ set GRDINF=`grdinfo -C R_matrix.gmt=1`
+ echo $GRDINF
+ 
+ set XMIN = `echo $GRDINF | cut -f2 -d' '`
+ set XMAX = `echo $GRDINF | cut -f3 -d' '`
+ set YMIN = `echo $GRDINF | cut -f4 -d' '`
+ set YMAX = `echo $GRDINF | cut -f5 -d' '`
+ echo $GRDINF
+ echo $XMIN
+ echo $XMAX
+ echo $YMIN
+ echo $YMAX
+#GRDINF: FILE Xmin Xmax Ymin Ymax Zmin Zmax dX dY Nx Ny
+
+ if ($# >= 2) then
+   set NZ = $2;
+ else
+   set NZ = 20;
+ endif
+ 
+echo $NZ
+
+set ZMIN=`echo $GRDINF | gawk '{print $6;}'`
+set ZMAX=`echo $GRDINF | gawk '{print $7;}'`
+set DZ=`echo $GRDINF | gawk -v NZZ=$NZ '{print ($7-$6)/NZZ;}'`
+
+ echo $ZMIN  
+ echo $ZMAX 
+ echo $DZ
+ 
+ if ($# < 3)  then
+   makecpt R_matrix.gmt=1 -I -Chaxby -T$ZMIN/$ZMAX/$DZ > g.cpt
+ else
+   makecpt R_matrix.gmt=1 -I -C$3 -T$ZMIN/$ZMAX/$DZ > g.cpt
+ endif
+
+grdimage R_matrix.gmt=1 -JX15 -Cg.cpt -R$XMIN/$XMAX/$YMIN/$YMAX  -B50/50 -K >! R_matrix.ps
+psxy R_matrix.xy -M -JX -W -R -O -K >> R_matrix.ps
+psscale -D16.5c/5c/10c/0.5c -Cg.cpt -V -O >> R_matrix.ps
+
+ggv R_matrix.ps
+endif

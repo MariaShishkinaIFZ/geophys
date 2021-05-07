@@ -1,0 +1,18 @@
+
+
+mkbnd -cs << END
+0 -1 0
+1 0 0
+0 0 1
+temp.2d
+END
+
+2dXYgmt temp.2d temp.gmt
+
+plm temp.gmt
+
+
+
+
+
+

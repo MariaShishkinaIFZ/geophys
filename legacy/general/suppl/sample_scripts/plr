@@ -1,0 +1,43 @@
+#!/bin/csh
+ gmtset GRID_CROSS_SIZE 0 ANOT_FONT_SIZE 10 PAPER_MEDIA a4
+
+ set GRDINF=`grdinfo -C ul1_ds.gmt=1`
+ echo $GRDINF
+ 
+ set XMIN = `echo $GRDINF | cut -f2 -d' '`
+ set XMAX = `echo $GRDINF | cut -f3 -d' '`
+ set YMIN = `echo $GRDINF | cut -f4 -d' '`
+ set YMAX = `echo $GRDINF | cut -f5 -d' '`
+ echo $XMIN
+ echo $XMAX
+ echo $YMIN
+ echo $YMAX
+
+set NZ=20
+set ZMIN=-0.08
+set ZMAX=0.08
+set DZ=0.005
+
+ echo $ZMIN  
+ echo $ZMAX 
+ echo $DZ
+ 
+foreach file (ul*ds.2d)
+  2dcgmt $file $file.gmt
+end
+2dcgmt ds_it1.2d ds0.2d.gmt
+2dcgmt dz_it1.2d dz0.2d.gmt
+ 
+makecpt  -I -Chaxby -T$ZMIN/$ZMAX/$DZ > r.cpt
+
+grdimage ul1_ds.2d.gmt=1 -Y13 -JX5 -BWNa1g1 -Cr.cpt -K >! ds.ps
+grdimage ul2_ds.2d.gmt=1 -X7 -JX5 -BNa1g1 -Cr.cpt -K -O >> ds.ps
+grdimage ul3_ds.2d.gmt=1 -X7 -JX5 -BNa1g1 -Cr.cpt -K -O >> ds.ps
+grdimage ul4_ds.2d.gmt=1 -X7 -JX5 -BNEa1g1 -Cr.cpt -K -O >> ds.ps
+grdimage ul5_ds.2d.gmt=1 -Y-8 -X-21 -JX5 -BWSa1g1 -Cr.cpt -K -O >> ds.ps
+grdimage ds0.2d.gmt=1 -X14 -JX5 -BSa1g1 -Cr.cpt -K -O >> ds.ps
+grdimage dz0.2d.gmt=1 -X7 -JX5 -BSEa1g1 -Cr.cpt -K -O >> ds.ps
+
+psscale -D0c/-3c/10c/0.5ch -B0.01 -Cr.cpt -V -O >> ds.ps
+gv ds.ps
+endif
