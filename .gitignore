@@ -1,5 +1,6 @@
 # vim
 *.swp
+*.swo
 
 # python cache
 __pycache__
@@ -7,3 +8,17 @@ __pycache__
 # global data dir
 /data
 
+# generic temp files
+*.*~
+
+# Qt creator project files
+*.pro
+
+# for now also spatial data files
+# (need a reason to track them by git)
+*.3d
+*.2d
+
+# any object files (as long as they are
+# build artifacts)
+*.o
