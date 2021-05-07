@@ -1941,7 +1941,6 @@ float fd5(t1,t2,t4,t3,t5,t6,t7,slo)
 float t1, t2, t3, t4, t5, t6, t7, slo;
 {
 	float x, inc1;
-	double sqrt();
 	x = 6.0*slo*slo - (t1-t2)*(t1-t2) - (t2-t3)*(t2-t3) - (t3-t1)*(t3-t1);
 	x -= (t4-t5)*(t4-t5) + (t5-t6)*(t5-t6) + (t6-t4)*(t6-t4);
 	if( x < 0 ) {
@@ -1967,7 +1966,6 @@ float fd6(t1,t2,t3,t4,t5,t6,t7,slo)
 float t1, t2, t3, t4, t5, t6, t7, slo;
 {
 	float x, inc1;
-	double sqrt();
 	x = 6.0*slo*slo - (t1-t2)*(t1-t2) - (t2-t3)*(t2-t3) - (t3-t1)*(t3-t1);
 	x -= (t4-t5)*(t4-t5) + (t5-t6)*(t5-t6) + (t6-t4)*(t6-t4);
 	if( x < 0 ) {
@@ -1995,7 +1993,6 @@ int nx, ny, nz, xs, ys, zs, index;
     (void)nz;
 	int nxr, nyr, nzr;
 	float try;
-	double sqrt();
 	nxr = ((index%(nx*ny))%nx);
 	nyr = (index%(nx*ny))/nx;
 	nzr = index/(nx*ny);
@@ -2008,7 +2005,6 @@ float fd7(t1,t2,t3,t4,t5,slo)
 float t1, t2, t3, t4, t5, slo;
 {
 	float x;
-	double sqrt();
 	x = slo*slo - 0.25*((t1-t3)*(t1-t3) + (t2-t4)*(t2-t4));
 	if( x < 0 ) {
 	/*	fprintf(stderr,"Warning: x<0 in fd7: new face \n");*/
@@ -2028,7 +2024,6 @@ float fd8(t3,t4,t1,t2,t5,slo)
 float t1, t2, t3, t4, t5, slo;
 {
 	float x;
-	double sqrt();
 	x = slo*slo*2.0 - (t1-t2)*(t1-t2)*0.5 - (t3-t4)*(t3-t4);
 	if( x < 0 ) {
 	/*	fprintf(stderr,"Warning: x<0 in fd8: new edge \n");*/
@@ -2057,7 +2052,6 @@ float fdh3d(t1,t2,t3,t4,t5,t6,t7,ss0,s1,s2,s3,s4,s5,s6,s7)
 	*/
 {
   float x,slo;
-  double sqrt();
   slo = .125*(ss0+s1+s2+s3+s4+s5+s6+s7);
   x = 6.*slo*slo - (t4-t2)*(t4-t2) - (t2-t6)*(t2-t6) - (t6-t4)*(t6-t4)
                  - (t7-t5)*(t7-t5) - (t5-t1)*(t5-t1) - (t1-t7)*(t1-t7);
@@ -2080,7 +2074,6 @@ float fdhne(t1,t2,t3,t4,t5,ss0,s1,s2,s3)
 	t4,t5 beside t2 on old face opposite each other */
 {
   float x,slo;
-  double sqrt();
   slo = .25*(ss0+s1+s2+s3);
   x = 2.*slo*slo - (t3-t1)*(t3-t1) - .5*(t5-t4)*(t5-t4);
   if (x>=0.)  {
@@ -2101,7 +2094,6 @@ float fdh2d(t1,t2,t3,ss0,s1,s2,s3)
       */
 {
   float x,slo;
-  double sqrt();
   slo = .25*(ss0+s1+s2+s3);
   x = 2.*slo*slo - (t3-t1)*(t3-t1);
   if (x>=0.)  {
@@ -2123,7 +2115,6 @@ float fdhnf(t1,t2,t3,t4,t5,ss0,s1)
 	*/
 {
   float x,slo;
-  double sqrt();
   slo = .5*(ss0+s1);
   x = slo*slo - .25*( (t4-t2)*(t4-t2) + (t5-t3)*(t5-t3) );
   if (x>=0.)  {
