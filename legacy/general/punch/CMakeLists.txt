@@ -11,3 +11,4 @@ set(HDR_FILES
 
 add_executable(punch ${SRC_FILES})
 target_compile_options(punch PUBLIC -Wall -Wextra -Werror)
+target_link_libraries(punch m)
