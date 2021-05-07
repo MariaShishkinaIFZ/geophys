@@ -1,0 +1,57 @@
+#!/bin/csh
+if ($# < 1)  then
+ exit
+else
+ gmtset GRID_CROSS_SIZE 0 ANOT_FONT_SIZE 10 PAPER_MEDIA a4
+
+ set GRDINF=`grdinfo -C $1=1`
+ echo $GRDINF
+ 
+ set XMIN = `echo $GRDINF | cut -f2 -d' '`
+ set XMAX = `echo $GRDINF | cut -f3 -d' '`
+ set YMIN = `echo $GRDINF | cut -f4 -d' '`
+ set YMAX = `echo $GRDINF | cut -f5 -d' '`
+ echo $GRDINF
+ echo $XMIN
+ echo $XMAX
+ echo $YMIN
+ echo $YMAX
+#GRDINF: FILE Xmin Xmax Ymin Ymax Zmin Zmax dX dY Nx Ny
+
+ if ($# >= 2) then
+   set NZ = $2;
+ else
+   set NZ = 20;
+ endif
+ 
+echo $NZ
+
+set ZMIN=`echo $GRDINF | gawk '{print $6;}'`
+set ZMAX=`echo $GRDINF | gawk '{print $7;}'`
+set DZ=`echo $GRDINF | gawk -v NZZ=$NZ '{print ($7-$6)/NZZ;}'`
+
+ echo $ZMIN  
+ echo $ZMAX 
+ echo $DZ
+ 
+# if ($# < 3)  then
+#  makecpt $1=1 -I -Chaxby -T$ZMIN/$ZMAX/$DZ > g.cpt
+# else
+#   makecpt $1=1 -I -C$3 -T$ZMIN/$ZMAX/$DZ > g.cpt
+# endif
+
+gmtset GRID_CROSS_SIZE 0 ANOT_FONT_SIZE 10
+
+#grdview $1=1 -Cg.cpt -E45/70 -JX10 -Jz-3.0 -S5 >> qq.ps
+
+grdimage $1=1 -JX15 -Cg.cpt -R$XMIN/$XMAX/$YMIN/$YMAX  -B20/30 -K >! q.ps
+psscale -D16c/5c/10c/0.5c -Cg.cpt -V -K -O >> q.ps
+pscoast -JX15 -Dh -R$XMIN/$XMAX/$YMIN/$YMAX -W -O>> q.ps
+#grdcontour $1=1 -Cg.cpt -A2 -JX15 -S5 -K -O >> q.ps
+#psxy shot0.dat -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -Sa0.3c -G255/0/0 -O -K >> q.ps
+#psxy rec.xyz -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -Si0.2c -G255/0/0 -O -K >> q.ps
+#psxy ray0.xyz -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -Sc0.1c -G0/255/0 -O -K >> q.ps
+#psxy ray0_f15.xyz -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -Sc0.1c -G0/0/255 -O -K >> q.ps
+psbasemap -Ba1/a1 -U$1 -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -O >> q.ps 
+ggv q.ps
+endif

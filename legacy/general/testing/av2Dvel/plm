@@ -1,0 +1,65 @@
+#!/bin/csh
+if ($# < 1)  then
+ exit
+else
+ gmtset GRID_CROSS_SIZE 0 ANOT_FONT_SIZE 10 PAPER_MEDIA a4
+
+ set GRDINF=`grdinfo -C $1=1`
+ echo $GRDINF
+ 
+ set XMIN = `echo $GRDINF | cut -f2 -d' '`
+ set XMAX = `echo $GRDINF | cut -f3 -d' '`
+ set YMIN = `echo $GRDINF | cut -f4 -d' '`
+ set YMAX = `echo $GRDINF | cut -f5 -d' '`
+ echo $GRDINF
+ echo $XMIN
+ echo $XMAX
+ echo $YMIN
+ echo $YMAX
+#GRDINF: FILE Xmin Xmax Ymin Ymax Zmin Zmax dX dY Nx Ny
+
+ if ($# >= 3) then
+   set NZ = $3;
+ else
+   set NZ = 20;
+ endif
+ 
+ if ($# >= 5) then
+   set ZMIN = $4
+   set ZMAX = $5
+ else
+   set ZMIN=`echo $GRDINF | gawk '{print $6;}'`
+   set ZMAX=`echo $GRDINF | gawk '{print $7;}'`
+ endif
+
+set DZ=`echo $ZMIN | gawk -vZZMAX=$ZMAX -v NZZ=$NZ '{print (ZZMAX-$1)/NZZ;}'`
+
+set ScX=`echo $XMIN | gawk -v XXMAX=$XMAX '{print 18.0/(XXMAX-$1);}'`
+set ScY=`echo $YMIN | gawk -v YYMAX=$YMAX '{print 18.0/(YYMAX-$1);}'`
+set Sc=`echo $ScX | gawk -v SScY=$ScY '{if ($1<SScY) print $1; else print SScY;}'`
+
+echo ScX=$ScX
+echo ScY=$ScY
+echo Sc=$Sc
+
+ echo $ZMIN  
+ echo $ZMAX 
+ echo $DZ
+ 
+ makecpt $1=1 -I -Chaxby -T$ZMIN/$ZMAX/$DZ > g.cpt
+
+gmtset GRID_CROSS_SIZE 0 ANOT_FONT_SIZE 10
+
+#grdview $1=1 -Cg.cpt -E45/70 -JX10 -Jz-3.0 -S5 >> qq.ps
+
+grdimage $1=1 -Jx$Sc -Cg.cpt -Ba10g10/a10g10 -K >! q.ps
+psscale -D20c/5c/10c/0.5c -Cg.cpt -V -O >> q.ps
+#pscoast -JX15 -Dh -R$XMIN/$XMAX/$YMIN/$YMAX -W -O -K >> q.ps
+#grdcontour $1=1 -Cg.cpt -A10 -JX15 -S5 -K -O >> q.ps
+#psxy $2 -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -Sc0.2c -G0/0/0 -O >> q.ps
+#psxy rec.xyz -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -Si0.2c -G255/0/0 -O -K >> q.ps
+#psxy ray0.xyz -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -Sc0.1c -G0/255/0 -O -K >> q.ps
+#psxy ray0_f15.xyz -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -Sc0.1c -G0/0/255 -O -K >> q.ps
+#psbasemap -Ba25/a25 -U$1 -JX15 -R$XMIN/$XMAX/$YMIN/$YMAX -O >> q.ps 
+gv q.ps
+endif

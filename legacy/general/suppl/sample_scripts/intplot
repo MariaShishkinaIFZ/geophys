@@ -1,0 +1,5 @@
+#!/bin/tcsh
+
+2dgmt modified_interface.2d modified_interface.gmt 153 153 0. 0. 0.1
+grdmath modified_interface.gmt=1 mask.gmt=1 MUL = intf.gmt=1
+pli intf.gmt

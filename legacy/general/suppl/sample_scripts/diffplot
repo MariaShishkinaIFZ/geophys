@@ -1,0 +1,8 @@
+#!/bin/tcsh
+
+
+2dgmt plane15.2d plane15.gmt 153 153 0. 0. 0.1
+2dgmt modified_interface.2d modified_interface.gmt 153 153 0. 0. 0.1
+grdmath modified_interface.gmt=1 plane15.gmt=1 SUB mask.gmt=1 MUL = diff_plane.gmt=1
+
+pli diff_plane.gmt 20 polar
