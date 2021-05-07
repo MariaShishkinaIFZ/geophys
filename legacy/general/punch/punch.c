@@ -87,11 +87,12 @@ if I don't answer the e-mail (our computers are in a state of flux).   */
 /*  last revised, 2-89, by Glenn Nelson for 5x5x5 source */
 /* UC Santa Cruz, all rights reserved */
 
-#include    	<stdio.h>
-#include	<math.h>
-#include    	<fcntl.h>
-#include	<stdlib.h>
-#include	<string.h>
+#include <stdio.h>
+#include <math.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "subio.h"
 
@@ -106,15 +107,58 @@ if I don't answer the e-mail (our computers are in a state of flux).   */
 #define	SQR(x)	((x) * (x))
 #define	DIST(x,y,z,x1,y1,z1)	sqrt(SQR(x-(x1))+SQR(y-(y1)) + SQR(z-(z1)))
 
+#ifdef FORTRAN
+#define GETPAR	getpar_
+#define MSTPAR	mstpar_
+#define ENDPAR	endpar_
+#else
+#define GETPAR	getpar
+#define MSTPAR	mstpar
+#define ENDPAR	endpar
+#endif
+
+// Print error and abort.
+#define gp_getpar_err(subname, mess, ...)                       \
+    do {                                                        \
+        fprintf(stderr,"\n***** ERROR in %s[%s] *****\n\t"      \
+                , (PROGNAME == NULL ? "(unknown)"               \
+                                    : PROGNAME)                 \
+                , subname);                                     \
+        fprintf(stderr,mess,##__VA_ARGS__);                     \
+        fprintf(stderr,"\n");                                   \
+        exit(GETPAR_ERROR);                                     \
+    } while (0);
+
+
 struct sorted
 	{ float time; int i1, i2;};
 
-/* FUNCTION DECLARATIONS	*/
-int
-	compar();
-float
-	ex0(), fd5(), fd6(), fd7(), fd8(),         /* VIDALE'S STENCILS */
-        fdh3d(),fdhne(),fdh2d(),fdhnf();           /* HOLE'S STENCILS */
+//---------------- FUNCTION DECLARATIONS ----------------//
+
+float ex0();
+/* VIDALE'S STENCILS */
+float fd5();
+float fd6();
+float fd7();
+float fd8();
+/* HOLE'S STENCILS */
+float fdh3d();
+float fdhne();
+float fdh2d();
+float fdhnf();           
+
+int gp_getvector(char *list, char *type, int *val);
+int gp_compute_hash(register char *s);
+int getpar(char *name, char *type, int *val);
+int setpar(int ac, char **av);
+int mstpar(char *name, char *type, int *val);
+int gp_close_dump(FILE *file);
+int ENDPAR();
+int compar(const void *x, const void *y);
+int gp_do_par_file(char *fname, int level);
+int gp_add_entry(char *name, char *value);
+
+//---------------- MAIN CODE SECTION --------------------//
 
 int main(ac,av)
 	int ac; 
@@ -147,7 +191,7 @@ int main(ac,av)
 		ys,		/* shot y position */
 		zs,		/* shot depth */
 		xx, yy, zz,		/* Used to loop around xs, ys, zs coordinates	*/
-		X1, X2, lasti, index, ii, i, j, k, radius,
+		X1, X2, index, ii, i, j, k, radius,
 	        tfint, vfint, wfint, ofint,
 		nxy, nyz, nxz, nxyz, nwall,
 		/* counters for the position of the sides of current cube */
@@ -156,8 +200,8 @@ int main(ac,av)
 		dx1=1, dx2=1, dy1=1, dy2=1, dz1=1, dz2=1, rad0=1,
                 /* maximum radius to compute */
 	        maxrad,
-		/* used in linear velocity gradient cube source */
-		xxx,yyy,zzz,
+		/* used in linear velocity gradient cube source (DEPRECATED) */
+		//xxx,yyy,zzz,
                 /* size of source cube     1 for 3x3x3, 2 for 5x5x5...	*/
                 NCUBE=2,
 		reverse=1,	/* will automatically do up to this number of
@@ -174,7 +218,8 @@ int main(ac,av)
 		fys,	/* shot position in Y (in real units)*/
 		fzs,	/* shot position in Z (in real units)*/
 		*slow0, *time0, *wall,
-		s000, guess, try, slo,
+		//s000, // DEPRECATED
+        guess, try,
 		/* real-unit coordinates of first grid point (for floatsrc=1) */
 		x0=0., y0=0., z0=0.,
                 /* maximum offset (real units) to compute */
@@ -183,19 +228,18 @@ int main(ac,av)
 		   the previously-computed traveltime by at least 
 		   headtest*<~time_across_cell> then the headwave counter is 
 		   triggered */
-		fhead,headtest=1.e-3,
-		/* pointers to times and slownesses */
-		*r0, *r1, *r2, *r3,
-		*p0, *p1, *p2, *p3, *p4, *p5;
+		fhead,headtest=1.e-3;
 	double
 		/* used in linear velocity gradient cube source */
-		rx, ry, rz, dvx, dvy, dvz, dv, v0,
+		rx, ry, rz,
+        // dvx, dvy, // DEPRECATED
+        dvz, dv, v0,
 		rzc, rxyc, rz1, rxy1, rho, theta1, theta2;
 	char
 		velfile[256],	/* file though which velocity structure is input */
 		oldtfile[256],	/* file through which old travel times are input */
 		timefile[256],	/* file in which travel times appear at the end */
-                wallfile[256];   /* file containing input wall values of traveltimes */
+        wallfile[256];   /* file containing input wall values of traveltimes */
         FILE *fp;
 
 	/* ARRAY TO ORDER SIDE FOR SOLUTION IN THE RIGHT ORDER */
@@ -215,7 +259,6 @@ int main(ac,av)
   	//fprintf(stderr,"%g %g %g\n",x0,y0,z0);
   	//fprintf(stderr,"%g\n",h);
 
-
 	setpar(ac,av);
 
 	//mstpar("nx",     "d", &nx);
@@ -233,7 +276,7 @@ int main(ac,av)
 	getpar("NCUBE","d",&NCUBE);
 	getpar("reverse","d",&reverse);
 	getpar("headpref","d",&headpref);
-	getpar("maxoff","f",&maxoff);
+	getpar("maxoff","f",(int32_t*)&maxoff);
 
 	if  (srctype==1)  {
 	   if(floatsrc==0){
@@ -248,9 +291,9 @@ int main(ac,av)
 		//getpar("x0","f",&x0);
 		//getpar("y0","f",&y0);
 		//getpar("z0","f",&z0);
-		mstpar("fxs","f",&fxs);
-		mstpar("fys","f",&fys);
-		mstpar("fzs","f",&fzs);
+		mstpar("fxs","f",(int32_t*)&fxs);
+		mstpar("fys","f",(int32_t*)&fys);
+		mstpar("fzs","f",(int32_t*)&fzs);
 		fxs = (fxs-x0)/h;
 		fys = (fys-y0)/h;
 		fzs = (fzs-z0)/h;
@@ -261,21 +304,20 @@ int main(ac,av)
 	}
 	else if (srctype==2)  {
 	        mstpar("srcwall","d",&srcwall);
-		mstpar("wallfile","s",wallfile);
+		mstpar("wallfile","s",(int32_t*)wallfile);
 	        }
 	else if (srctype==3)  {
 	        mstpar("srcwall","d",&srcwall);
-		mstpar("oldtfile","s",oldtfile);
+		mstpar("oldtfile","s",(int32_t*)oldtfile);
 	        }
 	else  {
 		fprintf(stderr,"ERROR: incorrect value of srctype\n");
 		exit(-1);
 	}
 
-	mstpar("timefile","s",timefile);
-	mstpar("velfile","s",velfile);
+	mstpar("timefile","s",(int32_t*)timefile);
+	mstpar("velfile","s",(int32_t*)velfile);
 	endpar();
-
  	
 	if(xs<2 || ys<2 || zs<2 || xs>nx-3 || ys>ny-3 || zs>nz-3){
 		fprintf(stderr,"Source near an edge, beware of traveltime errors\n");
@@ -615,7 +657,6 @@ int main(ac,av)
 			X1 = sort[i].i1;
 			X2 = sort[i].i2;
 			index = z1*nxy + X2*nx + X1;
-			lasti = (z1+1)*nxy + X2*nx + X1;
 			fhead = 0.;
 			guess = time0[index];
 			if (X2<ny-1  && X1<nx-1)
@@ -814,7 +855,6 @@ int main(ac,av)
 			X1 = sort[i].i1;
 			X2 = sort[i].i2;
 			index = z2*nxy + X2*nx + X1;
-			lasti = (z2-1)*nxy + X2*nx + X1;
 			fhead = 0.;
 			guess = time0[index];
 			if (X2<ny-1  && X1<nx-1)
@@ -1013,7 +1053,6 @@ int main(ac,av)
 			X1 = sort[i].i1;
 			X2 = sort[i].i2;
 			index = X2*nxy + y1*nx + X1;
-			lasti = X2*nxy + (y1+1)*nx + X1;
 			fhead = 0.;
 			guess = time0[index];
 			if (X2<nz-1  && X1<nx-1 )
@@ -1212,7 +1251,6 @@ int main(ac,av)
 			X1 = sort[i].i1;
 			X2 = sort[i].i2;
 			index = X2*nxy + y2*nx + X1;
-			lasti = X2*nxy + (y2-1)*nx + X1;
 			fhead = 0.;
 			guess = time0[index];
 			if (X2<nz-1  && X1<nx-1)
@@ -1411,7 +1449,6 @@ int main(ac,av)
 			X1 = sort[i].i1;
 			X2 = sort[i].i2;
 			index = X2*nxy + X1*nx + x1;
-			lasti = X2*nxy + X1*nx + (x1+1);
 			fhead = 0.;
 			guess = time0[index];
 			if (X2<nz-1  && X1<ny-1)
@@ -1610,7 +1647,6 @@ int main(ac,av)
 			X1 = sort[i].i1;
 			X2 = sort[i].i2;
 			index = X2*nxy + X1*nx + x2;
-			lasti = X2*nxy + X1*nx + (x2-1);
 			fhead = 0.;
 			guess = time0[index];
 			if (X2<nz-1  && X1<ny-1)
@@ -1891,9 +1927,10 @@ int main(ac,av)
 
 /* -------------------------------------------------------------------------- */
 
-compar(a,b)
-struct sorted *a, *b;
+int compar(const void *x, const void *y)
 {
+    const struct sorted *a = (struct sorted *)x;
+    const struct sorted *b = (struct sorted *)y;
 	if(a->time > b->time) return(1);
 	if(b->time > a->time) return(-1);
 	else return(0);
@@ -1955,6 +1992,7 @@ float t1, t2, t3, t4, t5, t6, t7, slo;
 float ex0(nx,ny,nz,xs,ys,zs,index)
 int nx, ny, nz, xs, ys, zs, index;
 {
+    (void)nz;
 	int nxr, nyr, nzr;
 	float try;
 	double sqrt();
@@ -2137,16 +2175,6 @@ float fdhnf(t1,t2,t3,t4,t5,ss0,s1)
 #define GETPAR_STOP	101	/* exit status for STOP or mstpar */
 #define MAXPARLEVEL	4	/* max recurrsion level for par files */
 
-#ifdef FORTRAN
-#define GETPAR	getpar_
-#define MSTPAR	mstpar_
-#define ENDPAR	endpar_
-#else
-#define GETPAR	getpar
-#define MSTPAR	mstpar
-#define ENDPAR	endpar
-#endif
-
 #define INIT	 1	/* bits for FLAGS (ext_par.argflags) */
 #define STOP	 2
 #define LIST	 4
@@ -2192,14 +2220,13 @@ struct ext_par		/* global variables for getpar */
 #ifdef FORTRAN
 setpar_()
 #else
-setpar(ac,av)		/* set up arglist & process INPUT command */
-int ac; char **av;
+int setpar(int ac, char **av)		/* set up arglist & process INPUT command */
 #endif
-   {
+{
 	register char *pl, *pn, *pv;
 	char  t, name[MAXNAME], value[MAXVALUE];
 	FILE *file, *gp_create_dump();
-	int i, addflags, nevlist, testav, testae;
+	int i, addflags;
 	struct arglist *alptr;
 #ifdef FORTRAN
 	int ac; char **av;
@@ -2216,8 +2243,8 @@ int ac; char **av;
 	NLIST= NBUF= LISTMAX= BUFMAX= 0;
 #ifdef ENVIRONMENT
 	gp_do_environment(ac,av);
+	int nevlist= NLIST;
 #endif
-	nevlist= NLIST;
 	while(--ac>0)
 	   {
 		av++;
@@ -2260,17 +2287,17 @@ int ac; char **av;
 #endif
 	addflags= 0;
 	*value= '\0';
-	if(GETPAR("STOP","s",value)) addflags |= STOP;
+	if(GETPAR("STOP","s",(int32_t*)value)) addflags |= STOP;
 	*value= '\0';
-	if(GETPAR("VERBOSE","s",value)) addflags |= VERBOSE;
+	if(GETPAR("VERBOSE","s",(int32_t*)value)) addflags |= VERBOSE;
 	*value= '\0';
-	if(GETPAR("LIST","s",value))
+	if(GETPAR("LIST","s",(int32_t*)value))
 	   {
 		addflags |= LIST;
 		LISTFILE =gp_create_dump(value,"list");
 	   }
 	*value= '\0';
-	if(GETPAR("INPUT","s",value))
+	if(GETPAR("INPUT","s",(int32_t*)value))
 	   {
 		file =gp_create_dump(value,"list input");
 		fprintf(file,"%s: getpar input listing\n",PROGNAME);
@@ -2282,11 +2309,13 @@ int ac; char **av;
 		gp_close_dump(file);
 	   }
 	FLAGS |= addflags;
-   }
+    return 0;
+}
 
-gp_add_entry(name,value)	/* add an entry to arglist, expanding memory */
-register char *name, *value;	/* if necessary */
-   {
+// add an entry to arglist, expanding memory
+// if necessary
+int gp_add_entry(char *name, char *value)
+{
 	struct arglist *alptr;
 	int len;
 	register char *ptr;
@@ -2322,7 +2351,8 @@ register char *name, *value;	/* if necessary */
 	alptr->argval= ptr;
 	do *ptr++ = *value; while(*value++);
 	NLIST++;
-   }
+    return 0;
+}
 #ifdef ENVIRONMENT
 gp_do_environment(ac,av)
 int ac; char **av;
@@ -2370,8 +2400,8 @@ int ac; char **av;
    }
 #endif
 
-ENDPAR()	/* free arglist & argbuf memory, & process STOP command */
-   {
+int ENDPAR()	/* free arglist & argbuf memory, & process STOP command */
+{
 	if(ARGLIST != NULL) free(ARGLIST);
 	if(ARGBUF  != NULL) free(ARGBUF);
 	ARGBUF=  NULL;
@@ -2383,17 +2413,16 @@ ENDPAR()	/* free arglist & argbuf memory, & process STOP command */
 		exit(GETPAR_STOP);
 	   }
 	FLAGS= END_PAR;	/* this stops further getpar calls */
-   }
+    return 0;
+}
 
 #ifdef FORTRAN
-mstpar_(name,type,val,dum1,dum2)
-int dum1, dum2;	/* dum1 & dum2 are extra args that fortran puts in */
+/* dum1 & dum2 are extra args that fortran puts in */
+int mstpar_(char *name,char *type, int *val, int dum1, int dum2)
 #else
-mstpar(name,type,val)
+int mstpar(char *name, char *type, int *val)
 #endif
-char *name, *type;
-int *val;
-   {
+{
 	int cnt;
 	char *typemess;
 
@@ -2421,21 +2450,19 @@ int *val;
 		default : typemess= "unknown (error)";	break;
 	   }
 	gp_getpar_err("mstpar","must specify value for '%s', expecting %s",
-		name,typemess);
-   }
+		          name,typemess);
+    return 0;
+}
 
 #ifdef FORTRAN
-getpar_(name,type,val,dum1,dum2)
-int dum1, dum2;	/* dum1 & dum2 are extra args that fortran puts in */
+/* dum1 & dum2 are extra args that fortran puts in */
+int getpar_(char *name, char * type, int *val, int dum1, int dum2)
 #else
-getpar(name,type,val)
+int getpar(char *name, char *type, int *val)
 #endif
-char *name, *type;
-int *val;
-   {
+{
 	register char *sptr;
 	register struct arglist *alptr;
-	register int i;
 	double atof(), *dbl;
 	float *flt;
 	int h, hno, hyes, found;
@@ -2525,7 +2552,7 @@ boolean:
 				  sprintf(line,"(flt) = %14.6e",*flt); break;
 			case 'F': dbl= (double *)val;
 				  sprintf(line,"(dbl) = %14.6e",*dbl); break;
-			case 's': sprintf(line,"(str) = %s",val); break;
+			case 's': sprintf(line,"(str) = %s", (char*)val); break;
 			case 'b': sprintf(line,"(boo) = %d",*val); break;
 			case 'v': switch(type[1])
 				   {
@@ -2546,11 +2573,10 @@ boolean:
 			(found ? "set":"def"),line);
 	   }
 	return(found);
-   }
-FILE *gp_create_dump(fname,filetype)
-char *fname;
-char *filetype;
-   {
+}
+
+FILE *gp_create_dump(char *fname, char *filetype)
+{
 	FILE *temp;
 
 	if(*fname == '\0') return(stderr);
@@ -2560,39 +2586,37 @@ char *filetype;
 	fprintf(stderr,"%s[setpar]: cannot create %s file %s\n",
 		PROGNAME,filetype,fname);
 	return(stderr);
-   }
+}
 
-gp_close_dump(file)
-FILE *file;
-   {
+int gp_close_dump(FILE *file)
+{
 	if(file == stderr || file == stdout) return(0);
 	fclose(file);
-   }
+    return 0;
+}
 
-gp_compute_hash(s)
-register char *s;
-   {
+int gp_compute_hash(register char *s)
+{
 	register int h;
 	h= s[0];
 	if(s[1]) h |= (s[1])<<8;	else return(h);
 	if(s[2]) h |= (s[2])<<16;	else return(h);
 	if(s[3]) h |= (s[3])<<24;
 	return(h);
-   }
+}
 
-gp_do_par_file(fname,level)
-char *fname;
-int level;
-   {
+int gp_do_par_file(char *fname, int level)
+{
 	register char *pl, *pn, *pv;
 	char t1, t2, line[MAXLINE], name[MAXNAME], value[MAXVALUE];
 	FILE *file, *fopen();
 
 	if(level > MAXPARLEVEL)
-		gp_getpar_err("setpar","%d (too many) recursive par file",level);
+		gp_getpar_err("setpar","%d (too many) recursive par file"
+                      ,level);
 		
 	if( (file=fopen(fname,"r"))==NULL)
-		gp_getpar_err("setpar","cannot open par file %s",fname);
+		gp_getpar_err("setpar","cannot open par file %s", fname);
 
 	while( fgets(line,MAXLINE,file) != NULL )
 	   {
@@ -2624,22 +2648,11 @@ int level;
 		goto loop;
 	   }
 	fclose(file);
-   }
+    return 0;
+}
 
-gp_getpar_err(subname,mess,a1,a2,a3,a4)
-char *subname, *mess;
-int a1, a2, a3, a4;
-   {
-	fprintf(stderr,"\n***** ERROR in %s[%s] *****\n\t",
-		(PROGNAME == NULL ? "(unknown)" : PROGNAME),subname);
-	fprintf(stderr,mess,a1,a2,a3,a4);
-	fprintf(stderr,"\n");
-	exit(GETPAR_ERROR);
-   }
-gp_getvector(list,type,val)
-char *list, *type;
-int *val;
-   {
+int gp_getvector(char *list, char *type, int *val)
+{
 	register char *p;
 	register int index, cnt;
 	char *valptr;
@@ -2668,8 +2681,7 @@ int *val;
 			cnt= atol(valptr);
 			if(cnt <= 0)
 				gp_getpar_err("getpar",
-					"bad repetition factor=%d specified",
-					 cnt);
+					"bad repetition factor=%d specified", cnt);
 			if(index+cnt > limit) cnt= limit - index;
 			p++;
 			goto backup;
@@ -2699,4 +2711,4 @@ int *val;
 		if(*p != '\0') p++;
 	   }
 	return(index);
-   }
+}
